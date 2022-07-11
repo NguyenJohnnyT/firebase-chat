@@ -1,11 +1,12 @@
 import React from "react";
-import "./App.css";
+import Layout from "./layout";
+import "./styles/_global.scss";
 
 const App: React.FC = () => {
   return (
-    <div className="App">
+    <Layout>
       <header className="App-header">Hello World :fire:</header>
-    </div>
+    </Layout>
   );
 };
 
