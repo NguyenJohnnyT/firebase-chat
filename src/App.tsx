@@ -2,7 +2,7 @@ import React from "react";
 import Layout from "./layout";
 import "./styles/_global.scss";
 import styles from "./index.module.scss";
-
+import { SignIn, SignOut } from "./components/SignInButtons";
 import * as firebase from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
@@ -47,10 +47,8 @@ const App: React.FC = () => {
 
   return (
     <Layout>
-      {!user ? <SignIn /> : <SignOut />}
-      <div className={styles.Chatbox}>
-        <header className="App-header">Hello World :fire:</header>
-      </div>
+      {!user ? <SignIn auth={auth} /> : <SignOut auth={auth} />}
+      <Chatbox />
     </Layout>
   );
 };
