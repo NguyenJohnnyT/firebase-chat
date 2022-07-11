@@ -6,7 +6,7 @@ const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
     <>
       <div className={styles.Layout}>
         THE chat
-        <div className={styles.Chatbox}>{children}</div>
+        {children}
       </div>
     </>
   );
