@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Layout from "./layout";
 import "./styles/_global.scss";
 import styles from "./index.module.scss";
@@ -70,9 +70,10 @@ const messageConverter: FirestoreDataConverter<Message> = {
 
 const Chatbox: React.FC = () => {
   const messageRef = collection(db, "messages").withConverter(messageConverter);
-  const q = query(messageRef, orderBy("created_at"), limit(25));
+  const q = query(messageRef, orderBy("created_at", "desc"), limit(25));
   const [data, loading, error] = useCollectionData(q);
   const [message, setMessage] = useState("");
+  const scrollRef = useRef<HTMLSpanElement>(null);
 
   const handleSendMessage: React.FormEventHandler<HTMLFormElement> = async (
     e
@@ -95,6 +96,7 @@ const Chatbox: React.FC = () => {
     });
 
     setMessage("");
+    scrollRef.current?.scrollIntoView(true);
   };
   return (
     <>
@@ -106,8 +108,11 @@ const Chatbox: React.FC = () => {
           <p>error loading data!</p>
         ) : (
           data &&
-          data.map((message) => <ChatMessage chat={message} key={message.id} />)
+          data
+            .reverse()
+            .map((message) => <ChatMessage chat={message} key={message.id} />)
         )}
+        <span ref={scrollRef}></span>
       </div>
       <form onSubmit={handleSendMessage}>
         <label htmlFor="chat">Send a message</label>
