@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "./layout";
 import "./styles/_global.scss";
 import styles from "./index.module.scss";
@@ -15,6 +15,8 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   SnapshotOptions,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -35,17 +37,20 @@ const auth = getAuth();
 const db = getFirestore(app);
 
 type Message = {
-  id: string;
+  id?: string;
+  uid: string;
   message: string;
   created_at: string;
+  photoURL: string;
 };
 
 const messageConverter: FirestoreDataConverter<Message> = {
   toFirestore(message: WithFieldValue<Message>): DocumentData {
     return {
-      id: message.id,
+      uid: message.uid,
       message: message.message,
       created_at: message.created_at,
+      photoURL: message.photoURL,
     };
   },
   fromFirestore(
@@ -55,8 +60,10 @@ const messageConverter: FirestoreDataConverter<Message> = {
     const data = snapshot.data(options);
     return {
       id: snapshot.id,
+      uid: data.uid,
       message: data.message,
       created_at: data.created_at,
+      photoURL: data.photoURL,
     };
   },
 };
@@ -65,29 +72,70 @@ const Chatbox: React.FC = () => {
   const messageRef = collection(db, "messages").withConverter(messageConverter);
   const q = query(messageRef, orderBy("created_at"), limit(25));
   const [data, loading, error] = useCollectionData(q);
+  const [message, setMessage] = useState("");
 
+  const handleSendMessage: React.FormEventHandler<HTMLFormElement> = async (
+    e
+  ) => {
+    e.preventDefault();
+
+    let photoURL, uid;
+    if (!auth.currentUser) {
+      return;
+    }
+
+    photoURL = auth.currentUser.photoURL || "";
+    uid = auth.currentUser.uid;
+
+    await addDoc(messageRef, {
+      message,
+      created_at: serverTimestamp(),
+      uid,
+      photoURL,
+    });
+
+    setMessage("");
+  };
   return (
-    <div className={styles.Chatbox}>
-      <header className="App-header">Hello World :fire:</header>
-      {loading ? (
-        <p>loading...</p>
-      ) : error ? (
-        <p>error loading data!</p>
-      ) : (
-        data &&
-        data.map((message) => (
-          <ChatMessage message={message} key={message.id} />
-        ))
-      )}
-    </div>
+    <>
+      <div className={styles.Chatbox}>
+        <header className="App-header">Hello World 🔥 </header>
+        {loading ? (
+          <p>loading...</p>
+        ) : error ? (
+          <p>error loading data!</p>
+        ) : (
+          data &&
+          data.map((message) => <ChatMessage chat={message} key={message.id} />)
+        )}
+      </div>
+      <form onSubmit={handleSendMessage}>
+        <label htmlFor="chat">Send a message</label>
+        <input
+          id="chat"
+          type="text"
+          placeholder=""
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        ></input>
+        <button type="submit" disabled={!auth.currentUser || !message}>
+          {!auth.currentUser ? "Login first!" : "Send Message"}
+        </button>
+      </form>
+    </>
   );
 };
 
-const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
+const ChatMessage: React.FC<{ chat: Message }> = ({ chat }) => {
+  const { message, photoURL, uid } = chat;
+  const id = auth.currentUser?.uid ?? "";
+  const messageStyle = uid === id ? "MessageSent" : "MessageReceived";
+
   return (
     <>
-      <div>
-        <p>{message.message}</p>
+      <div className={styles[messageStyle]}>
+        <img src={photoURL} alt={"profile pic"} />
+        <p>{message}</p>
       </div>
     </>
   );
