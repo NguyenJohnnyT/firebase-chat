@@ -4,29 +4,37 @@
   background-color: #d8e1ff;
   border: black 2px solid;
 
-  .MessageSent {
+  header {
+    text-align: center;
+  }
+  .Message {
     display: flex;
-    flex-direction: row-reverse;
     height: 3rem;
     margin-top: 0.5rem;
+
     img {
-      margin-left: 1rem;
-      border-radius: 50%;
       width: 3rem;
       height: 3rem;
+      border-radius: 50%;
+    }
+
+    p {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: clip;
+    }
+  }
+
+  .MessageSent {
+    flex-direction: row-reverse;
+    img {
+      margin-left: 1rem;
     }
   }
 
   .MessageReceived {
-    display: flex;
-    height: 3rem;
-    margin-top: 0.5rem;
-
     img {
       margin-right: 1rem;
-      border-radius: 50%;
-      width: 3rem;
-      height: 3rem;
     }
   }
 }

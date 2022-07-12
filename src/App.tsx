@@ -133,7 +133,7 @@ const ChatMessage: React.FC<{ chat: Message }> = ({ chat }) => {
 
   return (
     <>
-      <div className={styles[messageStyle]}>
+      <div className={`${styles[messageStyle]} ${styles.Message}`}>
         <img src={photoURL} alt={"profile pic"} />
         <p>{message}</p>
       </div>
