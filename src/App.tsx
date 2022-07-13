@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Layout from "./layout";
 import "./styles/_global.scss";
 import styles from "./index.module.scss";
@@ -75,6 +75,10 @@ const Chatbox: React.FC = () => {
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLSpanElement>(null);
 
+  const messages = useMemo(() => {
+    return data?.reverse();
+  }, [data]);
+
   const handleSendMessage: React.FormEventHandler<HTMLFormElement> = async (
     e
   ) => {
@@ -107,10 +111,10 @@ const Chatbox: React.FC = () => {
         ) : error ? (
           <p>error loading data!</p>
         ) : (
-          data &&
-          data
-            .reverse()
-            .map((message) => <ChatMessage chat={message} key={message.id} />)
+          messages &&
+          messages.map((message) => (
+            <ChatMessage chat={message} key={message.id} />
+          ))
         )}
         <span ref={scrollRef}></span>
       </div>
