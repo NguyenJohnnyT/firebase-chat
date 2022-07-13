@@ -1,8 +1,10 @@
 # Firebase Chat App
 
+![Imgur](https://i.imgur.com/93x2Ba5.png)
+
 For practicing deploying to Firebase.
 
-Deploy link: [here](https://jtn-chat-demo.web.app/)
+Deploy link: [here](https://jtn-chat-demo.firebaseapp.com/)
 
 Source videos: [here](https://www.youtube.com/watch?v=q5J5ho7YUhA) & [here](https://www.youtube.com/watch?v=zQyrwxMPm88&t=148s)
 
