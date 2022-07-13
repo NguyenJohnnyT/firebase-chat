@@ -1,46 +1,67 @@
-# Getting Started with Create React App
+# Firebase Chat App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+For practicing deploying to Firebase.
 
-## Available Scripts
+Deploy link: [here](https://jtn-chat-demo.web.app/)
 
-In the project directory, you can run:
+Source videos: [here](https://www.youtube.com/watch?v=q5J5ho7YUhA) & [here](https://www.youtube.com/watch?v=zQyrwxMPm88&t=148s)
 
-### `npm start`
+Reference code repo: [fireship-io](https://github.com/fireship-io/react-firebase-chat)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Post-mortem
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Achieved deploy to firebase web.app
+- Message document database created
+- Authentication via `GoogleAuthProvider` and `signInWithPopup`
+- Banned words and users were not added (could probably be a future implementation, but not important)
+- Issues
+  - Converting reference code to TypeScript
+  - Reference videos were on an older version of firebase
+    - Firebase 7 vs Firebase 9
+    - Firebase version 9 is modularized, so destructured imports
+    - Lots of functions were imported rather than calling firebase methods
+    - Needed to use a converter for the <code>useCollectionData</code> react hook which is explained [here](https://github.com/CSFrequency/react-firebase-hooks/blob/master/firestore/README.md#transforming-data) as `idField`, `refField` options were replaced in react-firebase-hooks v4.
 
-### `npm test`
+So instead of calling...
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```js
+const [messages] = useCollectionData(query, { idField: "id" });
+```
 
-### `npm run build`
+We write...
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```js
+// From react-firebase-tools: Enables transforming data as it leaves Firestore and also access the underlying id and ref fields of the snapshot.
+const messageConverter: FirestoreDataConverter<Message> = {
+  toFirestore(message: WithFieldValue<Message>): DocumentData {
+    return {
+      uid: message.uid,
+      message: message.message,
+      created_at: message.created_at,
+      photoURL: message.photoURL,
+    };
+  },
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): Message {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      uid: data.uid,
+      message: data.message,
+      created_at: data.created_at,
+      photoURL: data.photoURL,
+    };
+  },
+};
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+// Convert the collection, then query it. Note that query, orderby, collection, etc are all imported functions. So we no longer do const query = messageRef.orderBy('created_at').limit(25) as in the reference code
+const Chatbox: React.FC = () => {
+  const messageRef = collection(db, "messages").withConverter(messageConverter);
+  const q = query(messageRef, orderBy("created_at", "desc"), limit(25));
+  const [data, loading, error] = useCollectionData(q);
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+  ...code
+}
+```
