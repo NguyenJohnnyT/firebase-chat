@@ -44,6 +44,7 @@ type Message = {
   photoURL: string;
 };
 
+// Get id from firestore
 const messageConverter: FirestoreDataConverter<Message> = {
   toFirestore(message: WithFieldValue<Message>): DocumentData {
     return {
